@@ -9,11 +9,17 @@ export async function getTimetable(id: string) {
 
     const result = rows[0];
     var availables: SClass[] = [];
-    var saved: number[] = result.saved_timetable.split(',').map(v => Number(v));
+
+    
+    var saved: number[] = [];
+
+    if (result.saved_timetable) {
+        saved = result.saved_timetable.split(',').map(v => Number(v))
+    }
 
     if (!result.timetable) {
         const res = await getSyllabusResponse(result.sois_id, result.password);
-        const setCookie = res.headers.get('set-cookie');
+        const setCookie = res.cookie;
         if (setCookie) {
             const cookie = await parseCookie(setCookie);
             availables = await refreshTimetable(cookie);

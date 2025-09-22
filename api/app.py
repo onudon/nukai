@@ -9,14 +9,18 @@ import json
 import codecs
 
 primary_url = "https://syllabus-view.kwansei.ac.jp/main/web/course/list/"
+# primary_url = "https://sis-syllabus.kwansei.ac.jp/stg/app/student/web/course/list/"
 regex = r"[  *]"
 
 def scrape_senri(insertCookie):
     cookie = {}
+    # print("Insert Cookie: ", insertCookie)
     cookie["main/OPENSYLLABUS"] = insertCookie
     re = requests.get(primary_url, cookies=cookie, verify=False)
     re.encoding = re.apparent_encoding
 
+
+    # print(re.text)
     soup = BeautifulSoup(re.text, "html.parser")
 
     dic = {}
@@ -41,6 +45,8 @@ def scrape_senri(insertCookie):
         #     minclazz = clazz 
         clazzlist.append(clazz)
         dic[id] = clazz.__dict__
+
+    # print("Total Classes: ", clazzlist)
 
     return dic
 

@@ -18,6 +18,7 @@ export interface User extends mysql.RowDataPacket {
     registered: boolean,
     password: string,
     perm: string,
+    point: number,
 }
 
 export interface TimeTable extends mysql.RowDataPacket {
@@ -35,4 +36,28 @@ export interface SClass extends mysql.RowDataPacket {
     days: boolean,
     section: number,
     registed_max: string,
+}
+
+export async function getUserById(id: number): Promise<User | null> {
+    const [rows] = await pool.query<User[]>(
+        'SELECT id, sois_id, name, registered, perm, point FROM users WHERE sois_id = :id',
+        { id }
+    );
+    
+    return rows.length > 0 ? rows[0] : null;
+}
+
+// export async function getAllUsers(): Promise<User[]> {
+//     const [rows] = await pool.query<User[]>(
+//         'SELECT id, sois_id, name, registered, perm, point FROM users ORDER BY name'
+//     );
+    
+//     return rows;
+// }
+
+export async function updateUserPoints(userId: number, newPoints: number): Promise<void> {
+    await pool.query(
+        'UPDATE users SET point = :newPoints WHERE id = :userId',
+        { newPoints, userId }
+    );
 }

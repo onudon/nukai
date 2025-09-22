@@ -31,10 +31,16 @@ export default async function Home(props: { user: string, availableClasses: SCla
     }
 
     return (
-        <ClassSelectionForm
-            availableClasses={availableClasses}
-            initialSelectedClasses={res.saved}
-            userId={user.id.toString()}
-        />
+        <div>
+            <ClassSelectionForm
+                availableClasses={availableClasses}
+                initialSelectedClasses={res.saved}
+                userId={user.id.toString()}
+            />
+            <div className="text-center">
+                <h1 className="text-3xl text-red-600 font-bold">注意事項</h1>
+                <h1 className="text-3xl text-red-600 font-bold">注意事項</h1>
+            </div>
+        </div>
     );
 }
