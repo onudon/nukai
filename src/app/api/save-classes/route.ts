@@ -18,8 +18,11 @@ export async function POST(request: NextRequest) {
         }
 
         const user = verifyJWT(token) as JwtPayload;
-        console.log("request: " + user);
-        if (!user || !user.id || user.id.toString() !== userId) {
+        // console.log("request: " + user["id"] + " -> " + userId + " : " + user.id);
+        // console.log(!user);
+        // console.log(!user["id"]);
+        // console.log(user["id"] !== userId)
+        if (!user || !user["id"] || user["id"] !== userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
