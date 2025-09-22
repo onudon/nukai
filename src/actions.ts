@@ -174,7 +174,7 @@ export async function createUser(formData: FormData) {
 
         // 新しいユーザーを作成
         await pool.query(
-            "INSERT INTO users (sois_id, name, registered, password, perm, point) VALUES (:sois_id, :name, :registered, :perm, 10000)",
+            "INSERT INTO users (sois_id, name, registered, password, perm, point) VALUES (:sois_id, :name, :registered, \"\", :perm, 10000)",
             {
                 sois_id,
                 name,
