@@ -12,6 +12,43 @@ interface ClassSelectionFormProps {
 export default function ClassSelectionForm({ availableClasses, userId, initialSelectedClasses }: ClassSelectionFormProps) {
     const [selectedClasses, setSelectedClasses] = useState<number[]>(initialSelectedClasses);
     const [isLoading, setIsLoading] = useState(false);
+    const [popupTestStatus, setPopupTestStatus] = useState<'not-tested' | 'blocked' | 'allowed'>('not-tested');
+
+    const testPopup = () => {
+        try {
+            const testWindows = [];
+            let blockedCount = 0;
+            
+            // 3つのポップアップを試す
+            for (let i = 0; i < 3; i++) {
+                const testWindow = window.open('', '_blank', 'width=1,height=1');
+                if (testWindow) {
+                    testWindows.push(testWindow);
+                } else {
+                    blockedCount++;
+                }
+            }
+            
+            // 開いたウィンドウを閉じる
+            testWindows.forEach(window => {
+                if (window) {
+                    window.close();
+                }
+            });
+            
+            // 結果判定
+            if (blockedCount === 0) {
+                setPopupTestStatus('allowed');
+                alert(`ポップアップが許可されています！(3/3 成功)\nシラバス自動登録を実行できます。`);
+            } else {
+                setPopupTestStatus('blocked');
+                alert(`ポップアップがブロックされています。(${3 - blockedCount}/3)\nブラウザ設定でポップアップを許可してください。`);
+            }
+        } catch (error) {
+            setPopupTestStatus('blocked');
+            console.error('Popup test error:', error);
+        }
+    };
 
     const handleCheckboxChange = (classId: number, isChecked: boolean) => {
         if (isChecked) {
@@ -85,6 +122,62 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <h1 className="text-2xl font-bold mb-6 text-center">授業選択</h1>
+
+            {/* ポップアップ許可誘導UI */}
+            <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        <svg className="w-6 h-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.96-.833-2.73 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <div>
+                            <h3 className="text-lg font-medium text-yellow-800">
+                                シラバス自動登録にはポップアップ許可が必要です
+                            </h3>
+                            <p className="text-sm text-yellow-700 mt-1">
+                                自動登録時に大量のポップアップが開くため、事前にブラウザでポップアップを許可してください。
+                            </p>
+                        </div>
+                    </div>
+                    <div className="ml-4">
+                        <button
+                            onClick={testPopup}
+                            className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
+                        >
+                            ポップアップテスト
+                        </button>
+                    </div>
+                </div>
+                
+                {popupTestStatus === 'blocked' && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="flex items-center text-red-700">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span className="font-medium">ポップアップがブロックされています</span>
+                        </div>
+                        <p className="text-sm text-red-600 mt-2">
+                            アドレスバーのポップアップアイコンをクリックして「許可」を選択するか、
+                            ブラウザの設定でこのサイトのポップアップを許可してください。
+                        </p>
+                    </div>
+                )}
+                
+                {popupTestStatus === 'allowed' && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center text-green-700">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="font-medium">ポップアップが許可されています！</span>
+                        </div>
+                        <p className="text-sm text-green-600 mt-1">
+                            シラバス自動登録を実行できます。
+                        </p>
+                    </div>
+                )}
+            </div>
 
             <div className="flex gap-6 h-[600px]">
                 {/* 左側: 選択可能な授業 */}
