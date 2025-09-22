@@ -23,7 +23,7 @@ export default async function login(formData: FormData) {
     }
     const user: User = rows[0];
     if (false) {
-    // if (user.registered) {
+        // if (user.registered) {
         if (user.password !== password) {
             user.password = ""
             redirect("/login?error=1")
@@ -96,7 +96,7 @@ export async function getSyllabusResponse(id: number, password: string) {
     headers.append('Cookie', cookie);
 
     const res = await fetch('http://syllabus-view.kwansei.ac.jp/main/web/login/login/', {
-    // const res = await fetch('https://sis-syllabus.kwansei.ac.jp/stg/app/student/web/login/login/', {
+        // const res = await fetch('https://sis-syllabus.kwansei.ac.jp/stg/app/student/web/login/login/', {
         method: 'POST',
         headers: headers,
         body: "_token=" + token + "&TXT_ST_ID=" + id + "&TXT_ST_PW=" + password,
@@ -108,7 +108,7 @@ export async function getSyllabusResponse(id: number, password: string) {
 
     // console.log("Login fetch response: ", res);
     // console.log("Login fetch status: ", res.status);
-    return {res: res, cookie: cookie}
+    return { res: res, cookie: cookie }
 }
 export async function refreshTimetable(cookie: string) {
     const apiRes = await fetch((process.env.API_URL + "/scrape?cookie=" + cookie), { method: 'GET' })
@@ -161,10 +161,12 @@ export async function createUser(formData: FormData) {
     //     redirect('/admin?error=invalid_perm');
     // }
 
+    var isError = false;
+
     try {
         // 既存ユーザーの確認
         const [existingUser] = await pool.query<User[]>(
-            "SELECT id FROM users WHERE sois_id = :sois_id", 
+            "SELECT id FROM users WHERE sois_id = :sois_id",
             { sois_id }
         );
 
@@ -183,10 +185,14 @@ export async function createUser(formData: FormData) {
             }
         );
 
-        redirect('/admin?success=1');
     } catch (error) {
         console.error('ユーザー作成エラー:', error);
+        isError = true;
+    }
+    if (isError) {
         redirect('/admin?error=db_error');
+    } else {
+        redirect('/admin?success=1');
     }
 }
 
@@ -262,11 +268,11 @@ export async function transferPoints(formData: FormData) {
     } catch (error) {
         await pool.query('ROLLBACK');
         console.error('Transfer error:', error);
-        isError = false;   
+        isError = false;
     }
     if (isError) {
         redirect('/?success=transfer_completed');
-    }else{
+    } else {
         redirect('/?error=transfer_failed');
     }
 }
