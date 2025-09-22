@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import ClassSelectionForm from "@/components/ClassSelectionForm";
 
-export default async function Home(props: { user: string, availableClasses: SClass[] }) {
+export default async function Home() {
 
     const cookie = await cookies();
     const token = cookie.get('token')?.value;
@@ -25,6 +25,7 @@ export default async function Home(props: { user: string, availableClasses: SCla
 
     const res = await getTimetable(user["id"]) as { availables: SClass[], saved: number[] };
     const availableClasses: [SClass] = res.availables as [SClass];
+    const id: string = user["id"];
 
     if (!availableClasses) {
         redirect('/login');
@@ -34,8 +35,8 @@ export default async function Home(props: { user: string, availableClasses: SCla
         <div>
             <ClassSelectionForm
                 availableClasses={availableClasses}
+                userId={id}
                 initialSelectedClasses={res.saved}
-                userId={user.id.toString()}
             />
             <div className="text-center">
                 <h1 className="text-5xl text-red-600 font-bold mt-5">注意事項</h1>
