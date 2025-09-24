@@ -35,7 +35,7 @@ export interface SClass extends mysql.RowDataPacket {
     name: string,
     timetable: string,
     days: boolean,
-    section: number,
+    section: string,
     registed_max: string,
 }
 
