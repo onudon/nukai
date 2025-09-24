@@ -13,12 +13,13 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
     const [selectedClasses, setSelectedClasses] = useState<number[]>(initialSelectedClasses);
     const [isLoading, setIsLoading] = useState(false);
     const [popupTestStatus, setPopupTestStatus] = useState<'not-tested' | 'blocked' | 'allowed'>('not-tested');
+    const [showPassword, setShowPassword] = useState<boolean>(false);
 
     const testPopup = () => {
         try {
             const testWindows = [];
             let blockedCount = 0;
-            
+
             // 3つのポップアップを試す
             for (let i = 0; i < 3; i++) {
                 const testWindow = window.open('', '_blank', 'width=1,height=1');
@@ -28,14 +29,14 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
                     blockedCount++;
                 }
             }
-            
+
             // 開いたウィンドウを閉じる
             testWindows.forEach(window => {
                 if (window) {
                     window.close();
                 }
             });
-            
+
             // 結果判定
             if (blockedCount === 0) {
                 setPopupTestStatus('allowed');
@@ -96,13 +97,27 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
             const form = document.querySelector('form[name="formRegist"]') as HTMLFormElement;
             const courseIdInput = document.querySelector('input[name="CourseID"]') as HTMLInputElement;
 
+            const loginForm = document.querySelector('form[name="login_form"]') as HTMLFormElement;
+            const idInput = document.querySelector('input[name="TXT_ST_ID"]') as HTMLInputElement;
+            const passwordInput = document.querySelector('input[name="TXT_ST_PW"]') as HTMLInputElement;
+
             if (!form || !courseIdInput) {
                 console.error('Form or CourseID input not found');
                 return;
             }
 
+            // UIからパスワードを直接取得
+            const uiPasswordInput = document.getElementById('syllabus-password-input') as HTMLInputElement;
+            const currentPassword = uiPasswordInput ? uiPasswordInput.value : '';
+
             // フォームのactionを設定
             form.action = link;
+            loginForm.action = link.replace('/schedule/prov', '/login/login/');
+            idInput.value = userId;
+            passwordInput.value = currentPassword;
+            loginForm.submit();
+
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             for (let i = courses.length - 1; i >= 0; i--) {
                 courseIdInput.value = courses[i].toString();
@@ -148,7 +163,7 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
                         </button>
                     </div>
                 </div>
-                
+
                 {popupTestStatus === 'blocked' && (
                     <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                         <div className="flex items-center text-red-700">
@@ -163,7 +178,7 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
                         </p>
                     </div>
                 )}
-                
+
                 {popupTestStatus === 'allowed' && (
                     <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <div className="flex items-center text-green-700">
@@ -177,6 +192,50 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
                         </p>
                     </div>
                 )}
+            </div>
+
+            {/* パスワード入力フィールド */}
+            <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-lg">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center flex-1">
+                        <svg className="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 0h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <div className="flex-1">
+                            <h3 className="text-lg font-medium text-blue-800 mb-2">
+                                シラバスログイン用パスワード
+                            </h3>
+                            <div className="relative w-full max-w-md">
+                                <input
+                                    id="syllabus-password-input"
+                                    type={showPassword ? "text" : "password"}
+                                    defaultValue=""
+                                    className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="シラバスのパスワードを入力"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                >
+                                    {showPassword ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+                            <p className="text-sm text-blue-600 mt-1">
+                                自動登録時にシラバスサイトへログインするために使用されます
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="flex gap-6 h-[600px]">
@@ -283,6 +342,12 @@ export default function ClassSelectionForm({ availableClasses, userId, initialSe
             <div>
                 <form name="formRegist" action="" method="post" target="_blank">
                     <input type="hidden" name="CourseID" value="" />
+                </form>
+            </div>
+            <div>
+                <form action="" method="post" name="login_form" id="login_form" target="_blank">
+                    <input id="login_pass" type="hidden" name="TXT_ST_ID"></input>
+                    <input id="login_pass" type="hidden" name="TXT_ST_PW"></input>
                 </form>
             </div>
         </div>

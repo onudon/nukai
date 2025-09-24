@@ -105,7 +105,6 @@ export async function getSyllabusResponse(id: number, password: string) {
     if (res.headers.has('set-cookie')) {
         cookie = String(res.headers.getSetCookie()[0]).split(';')[0];
     }
-
     // console.log("Login fetch response: ", res);
     // console.log("Login fetch status: ", res.status);
     return { res: res, cookie: cookie }
@@ -189,11 +188,12 @@ export async function createUser(formData: FormData) {
         console.error('ユーザー作成エラー:', error);
         isError = true;
     }
-    if (isError) {
-        redirect('/admin?error=db_error');
-    } else {
-        redirect('/admin?success=1');
-    }
+    
+    // if (isError) {
+    //     redirect('/admin?error=db_error');
+    // } else {
+    //     redirect('/admin?success=1');
+    // }
 }
 
 export async function transferPoints(formData: FormData) {
