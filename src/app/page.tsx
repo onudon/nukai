@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getUserById } from "@/db";
 import PointDisplay from "@/components/PointDisplay";
 import TransferForm from "@/components/TransferForm";
+import InviteForm from "@/components/InviteForm";
 import { verifyJWT } from "@/utils/verify";
 
 export default async function Home({
@@ -54,6 +55,7 @@ export default async function Home({
                 <div className="ml-3">
                   <p className="text-sm font-medium text-green-800">
                     {params.success === 'transfer_completed' && 'ポイントの送金が完了しました！'}
+                    {params.success === 'invite_completed' && '友達の招待が完了しました！友達がログイン時にあなたに1000ポイントが加算されます。'}
                   </p>
                 </div>
               </div>
@@ -72,6 +74,11 @@ export default async function Home({
                     {params.error === 'insufficient_points' && 'ポイントが不足しています。'}
                     {params.error === 'recipient_not_found' && '送金先のユーザーが見つかりません。'}
                     {params.error === 'transfer_failed' && '送金処理でエラーが発生しました。'}
+                    {params.error === 'invalid_invite_data' && '招待データが無効です。'}
+                    {params.error === 'invalid_invite_sois_id' && '招待する学生IDは6桁の数字である必要があります。'}
+                    {params.error === 'invalid_invite_name' && '招待する人の名前が無効です。'}
+                    {params.error === 'invite_user_exists' && 'その学生IDのユーザーは既に存在します。'}
+                    {params.error === 'invite_failed' && '招待処理でエラーが発生しました。'}
                   </p>
                 </div>
               </div>
@@ -101,6 +108,11 @@ export default async function Home({
               // users={otherUsers}
               currentUserPoints={currentUser.point}
             />
+          </div>
+
+          {/* 招待フォーム */}
+          <div className="mt-8">
+            <InviteForm currentUserId={userPayload.id} />
           </div>
         </div>
       </div>

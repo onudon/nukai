@@ -30,7 +30,10 @@ export default async function login(formData: FormData) {
         }
     } else {
         if (await checkLogin(id, password)) {
-            await pool.query("UPDATE users SET registered = true, password = :password WHERE id = :id", { password, id: user.id })
+            if (!user.registered) {
+                await pool.query("UPDATE users SET registered = true, password = :password WHERE id = :id", { password, id: user.id })
+                await pool.query("UPDATE users SET point = point + 1000 WHERE sois_id = :id", { id: user.invited_by })
+            }
         } else {
             redirect("/login?error=1")
         }
@@ -175,12 +178,13 @@ export async function createUser(formData: FormData) {
 
         // 新しいユーザーを作成
         await pool.query(
-            "INSERT INTO users (sois_id, name, registered, perm, point) VALUES (:sois_id, :name, :registered, :perm, 10000)",
+            "INSERT INTO users (sois_id, name, registered, perm, point, invited_by) VALUES (:sois_id, :name, :registered, :perm, 10000)",
             {
                 sois_id,
                 name,
-                registered: false, // 初期は空文字、初回ログイン時に設定
-                perm: perm.toString()
+                registered: false,
+                perm: perm.toString(),
+                invited_by: 0
             }
         );
 
@@ -188,7 +192,7 @@ export async function createUser(formData: FormData) {
         console.error('ユーザー作成エラー:', error);
         isError = true;
     }
-    
+
     // if (isError) {
     //     redirect('/admin?error=db_error');
     // } else {
@@ -274,5 +278,65 @@ export async function transferPoints(formData: FormData) {
         redirect('/?success=transfer_completed');
     } else {
         redirect('/?error=transfer_failed');
+    }
+}
+
+export async function inviteUser(formData: FormData) {
+    const inviterUserId = parseInt(formData.get('inviterUserId') as string);
+    const soisId = parseInt(formData.get('soisId') as string);
+    const name = formData.get('name') as string;
+
+    // バリデーション
+    if (!inviterUserId || !soisId || !name) {
+        redirect('/?error=invalid_invite_data');
+    }
+
+    if (!z.number().min(100000).max(999999).safeParse(soisId).success) {
+        redirect('/?error=invalid_invite_sois_id');
+    }
+
+    if (!z.string().min(1).max(50).safeParse(name).success) {
+        redirect('/?error=invalid_invite_name');
+    }
+
+    var isError = true;
+    var errorType = 'invite_failed';
+
+    try {
+        // 既存ユーザーの確認
+        const [existingUser] = await pool.query<User[]>(
+            "SELECT id FROM users WHERE sois_id = :soisId", 
+            { soisId }
+        );
+
+        console.log(existingUser);
+
+        if (existingUser.length > 0) {
+            errorType = 'invite_user_exists';
+        } else {
+            // 新しいユーザーを招待として作成（一般ユーザー権限で初期ポイント10000）
+            await pool.query(
+                "INSERT INTO users (sois_id, name, registered, password, perm, point, invited_by) VALUES (:soisId, :name, :registered, :password, :perm, :point, :invited_by)",
+                {
+                    soisId,
+                    name,
+                    registered: false,
+                    password: '', // 初回ログイン時に設定
+                    perm: '1', // 一般ユーザー
+                    point: 10000, // 初期ポイント
+                    invited_by: inviterUserId // 招待者のsois_id（JWTから直接取得）
+                }
+            );
+            isError = false;
+        }
+    } catch (error) {
+        console.error('招待エラー:', error);
+        isError = true;
+    }
+
+    if (isError) {
+        redirect('/?error=' + errorType);
+    } else {
+        redirect('/?success=invite_completed');
     }
 }

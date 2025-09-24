@@ -19,6 +19,7 @@ export interface User extends mysql.RowDataPacket {
     password: string,
     perm: string,
     point: number,
+    invited_by: number
 }
 
 export interface TimeTable extends mysql.RowDataPacket {
@@ -40,7 +41,7 @@ export interface SClass extends mysql.RowDataPacket {
 
 export async function getUserById(id: number): Promise<User | null> {
     const [rows] = await pool.query<User[]>(
-        'SELECT id, sois_id, name, registered, perm, point FROM users WHERE sois_id = :id',
+        'SELECT id, sois_id, name, registered, perm, point, invited_by FROM users WHERE sois_id = :id',
         { id }
     );
     
