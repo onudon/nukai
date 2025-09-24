@@ -81,7 +81,7 @@ export async function parseCookie(oldCookie: string) {
 
 export async function getSyllabusResponse(id: number, password: string) {
 
-    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'
+    // process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'
     const pre = await fetch("https://syllabus-view.kwansei.ac.jp/main/web/login/view/")
     // const pre = await fetch("http://sis-syllabus.kwansei.ac.jp/stg/app/student/web/login/view/")
     const text = await pre.text()
